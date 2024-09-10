@@ -166,8 +166,6 @@ public:
 
   void EmitToString(DiagnosticsEngine &Diags,
                     SmallVectorImpl<char> &Buf) const {
-    // FIXME: It should be possible to render a diagnostic to a string without
-    //        messing with the state of the diagnostics engine.
     DiagnosticBuilder DB(Diags.Report(getDiagID()));
     Emit(DB);
     Diagnostic(&Diags, DB).FormatDiagnostic(Buf);

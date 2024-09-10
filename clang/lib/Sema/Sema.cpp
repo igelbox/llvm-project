@@ -1523,7 +1523,7 @@ LangAS Sema::getDefaultCXXMethodAddrSpace() const {
   return LangAS::Default;
 }
 
-void Sema::EmitCurrentDiagnostic(unsigned DiagID, const DiagnosticBuilder& DB) {
+void Sema::EmitDiagnostic(unsigned DiagID, const DiagnosticBuilder& DB) {
   // FIXME: It doesn't make sense to me that DiagID is an incoming argument here
   // and yet we also use the current diag ID on the DiagnosticsEngine. This has
   // been made more painfully obvious by the refactor that introduced this
@@ -1576,8 +1576,7 @@ void Sema::EmitCurrentDiagnostic(unsigned DiagID, const DiagnosticBuilder& DB) {
 
       Diags.setLastDiagnosticIgnored(true);
 
-      // Now the diagnostic state is clear, produce a C++98 compatibility
-      // warning.
+      // Now produce a C++98 compatibility warning.
       Diag(Loc, diag::warn_cxx98_compat_sfinae_access_control);
 
       // The last diagnostic which Sema produced was ignored. Suppress any
@@ -1605,7 +1604,7 @@ void Sema::EmitCurrentDiagnostic(unsigned DiagID, const DiagnosticBuilder& DB) {
   Context.setPrintingPolicy(getPrintingPolicy());
 
   // Emit the diagnostic.
-  if (!Diags.EmitCurrentDiagnostic(DB))
+  if (!Diags.EmitDiagnostic(DB))
     return;
 
   // If this is not a note, and we're in a template instantiation

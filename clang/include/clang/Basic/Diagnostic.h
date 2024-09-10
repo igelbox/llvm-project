@@ -962,8 +962,8 @@ public:
 private:
   // This is private state used by DiagnosticBuilder.  We put it here instead of
   // in DiagnosticBuilder in order to keep DiagnosticBuilder a small lightweight
-  // object.  This implementation choice means that we can only have one
-  // diagnostic "in flight" at a time, but this seems to be a reasonable
+  // object.  This implementation choice means that we can only have a few
+  // diagnostics "in flight" at a time, but this seems to be a reasonable
   // tradeoff to keep these objects small.  Assertions verify that only one
   // diagnostic is in flight at a time.
   friend class Diagnostic;
@@ -1017,10 +1017,10 @@ protected:
   // Sema::Diag() patterns.
   friend class Sema;
 
-  /// Emit the current diagnostic and clear the diagnostic state.
+  /// Emit the diagnostic
   ///
   /// \param Force Emit the diagnostic regardless of suppression settings.
-  bool EmitCurrentDiagnostic(const DiagnosticBuilder& DB, bool Force = false);
+  bool EmitDiagnostic(const DiagnosticBuilder& DB, bool Force = false);
 
   /// @}
 };
@@ -1250,7 +1250,7 @@ protected:
     if (!isActive()) return false;
 
     // Process the diagnostic.
-    bool Result = DiagObj->EmitCurrentDiagnostic(*this, IsForceEmit);
+    bool Result = DiagObj->EmitDiagnostic(*this, IsForceEmit);
 
     // This diagnostic is dead.
     Clear();

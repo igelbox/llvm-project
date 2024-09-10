@@ -494,7 +494,7 @@ void DiagnosticsEngine::Report(const StoredDiagnostic &storedDiag) {
   }
 }
 
-bool DiagnosticsEngine::EmitCurrentDiagnostic(const DiagnosticBuilder& DB, bool Force) {
+bool DiagnosticsEngine::EmitDiagnostic(const DiagnosticBuilder& DB, bool Force) {
   assert(getClient() && "DiagnosticClient not set!");
 
   bool Emitted;

@@ -1624,10 +1624,10 @@ public:
   bool isSelfExpr(Expr *RExpr);
   bool isSelfExpr(Expr *RExpr, const ObjCMethodDecl *Method);
 
-  /// Cause the active diagnostic on the DiagosticsEngine to be
-  /// emitted. This is closely coupled to the SemaDiagnosticBuilder class and
+  /// Cause the built diagnostic to be emitted on the DiagosticsEngine.
+  /// This is closely coupled to the SemaDiagnosticBuilder class and
   /// should not be used elsewhere.
-  void EmitCurrentDiagnostic(unsigned DiagID, const DiagnosticBuilder& DB);
+  void EmitDiagnostic(unsigned DiagID, const DiagnosticBuilder& DB);
 
   /// Records and restores the CurFPFeatures state on entry/exit of compound
   /// statements.
@@ -1761,7 +1761,7 @@ public:
       Clear();
 
       // Dispatch to Sema to emit the diagnostic.
-      SemaRef.EmitCurrentDiagnostic(DiagID, *this);
+      SemaRef.EmitDiagnostic(DiagID, *this);
     }
 
     /// Teach operator<< to produce an object of the correct type.
