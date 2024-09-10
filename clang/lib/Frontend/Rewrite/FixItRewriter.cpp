@@ -202,7 +202,6 @@ void FixItRewriter::Diag(SourceLocation Loc, unsigned DiagID) {
   // clear out any current diagnostic, and let the downstream client
   // format the diagnostic.
   Diags.setClient(Client, false);
-  // Diags.Clear();
   Diags.Report(Loc, DiagID);
   Diags.setClient(this, false);
 }

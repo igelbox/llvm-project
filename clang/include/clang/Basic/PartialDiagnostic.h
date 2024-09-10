@@ -172,7 +172,6 @@ public:
     Emit(DB);
     Diagnostic(&Diags, DB).FormatDiagnostic(Buf);
     DB.Clear();
-    // Diags.Clear();
   }
 
   /// Clear out this partial diagnostic, giving it a new diagnostic ID

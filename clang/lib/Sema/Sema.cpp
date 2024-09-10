@@ -1552,7 +1552,6 @@ void Sema::EmitCurrentDiagnostic(unsigned DiagID, const DiagnosticBuilder& DB) {
       }
 
       Diags.setLastDiagnosticIgnored(true);
-      // Diags.Clear();
       return;
 
     case DiagnosticIDs::SFINAE_AccessControl: {
@@ -1576,7 +1575,6 @@ void Sema::EmitCurrentDiagnostic(unsigned DiagID, const DiagnosticBuilder& DB) {
       }
 
       Diags.setLastDiagnosticIgnored(true);
-      // Diags.Clear();
 
       // Now the diagnostic state is clear, produce a C++98 compatibility
       // warning.
@@ -1598,7 +1596,6 @@ void Sema::EmitCurrentDiagnostic(unsigned DiagID, const DiagnosticBuilder& DB) {
 
       // Suppress this diagnostic.
       Diags.setLastDiagnosticIgnored(true);
-      // Diags.Clear();
       return;
     }
   }

@@ -1,5 +1,3 @@
-#pragma GCC optimize ("O0")
-
 //===--- DiagnosticIDs.cpp - Diagnostic IDs Handling ----------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -804,7 +802,7 @@ bool DiagnosticIDs::ProcessDiag(DiagnosticsEngine &Diag, const DiagnosticBuilder
     // stop a flood of bogus errors.
     if (Diag.ErrorLimit && Diag.NumErrors > Diag.ErrorLimit &&
         DiagLevel == DiagnosticIDs::Error) {
-      Diag.SetDelayedDiagnostic(diag::fatal_too_many_errors);
+      Diag.Report(diag::fatal_too_many_errors);
       return false;
     }
   }
@@ -827,8 +825,6 @@ void DiagnosticIDs::EmitDiag(DiagnosticsEngine &Diag, const DiagnosticBuilder &D
     if (DiagLevel == DiagnosticIDs::Warning)
       ++Diag.NumWarnings;
   }
-
-  // Diag.CurDiagID = ~0U;
 }
 
 bool DiagnosticIDs::isUnrecoverable(unsigned DiagID) const {

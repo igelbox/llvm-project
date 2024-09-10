@@ -555,20 +555,6 @@ private:
   void *ArgToStringCookie = nullptr;
   ArgToStringFnTy ArgToStringFn;
 
-  /// ID of the "delayed" diagnostic, which is a (typically
-  /// fatal) diagnostic that had to be delayed because it was found
-  /// while emitting another diagnostic.
-  unsigned DelayedDiagID;
-
-  /// First string argument for the delayed diagnostic.
-  std::string DelayedDiagArg1;
-
-  /// Second string argument for the delayed diagnostic.
-  std::string DelayedDiagArg2;
-
-  /// Third string argument for the delayed diagnostic.
-  std::string DelayedDiagArg3;
-
 public:
   explicit DiagnosticsEngine(IntrusiveRefCntPtr<DiagnosticIDs> Diags,
                              IntrusiveRefCntPtr<DiagnosticOptions> DiagOpts,
@@ -968,47 +954,10 @@ public:
   /// \param DiagID A member of the @c diag::kind enum.
   /// \param Loc Represents the source location associated with the diagnostic,
   /// which can be an invalid location if no position information is available.
-  DiagnosticBuilder Report(SourceLocation Loc, unsigned DiagID);
+  inline DiagnosticBuilder Report(SourceLocation Loc, unsigned DiagID);
   inline DiagnosticBuilder Report(unsigned DiagID);
 
   void Report(const StoredDiagnostic &storedDiag);
-
-  /// Determine whethere there is already a diagnostic in flight.
-  bool isDiagnosticInFlight() const {
-    return false; // TODO: remove all
-  //   return CurDiagID != std::numeric_limits<unsigned>::max();
-  }
-
-  /// Set the "delayed" diagnostic that will be emitted once
-  /// the current diagnostic completes.
-  ///
-  ///  If a diagnostic is already in-flight but the front end must
-  ///  report a problem (e.g., with an inconsistent file system
-  ///  state), this routine sets a "delayed" diagnostic that will be
-  ///  emitted after the current diagnostic completes. This should
-  ///  only be used for fatal errors detected at inconvenient
-  ///  times. If emitting a delayed diagnostic causes a second delayed
-  ///  diagnostic to be introduced, that second delayed diagnostic
-  ///  will be ignored.
-  ///
-  /// \param DiagID The ID of the diagnostic being delayed.
-  ///
-  /// \param Arg1 A string argument that will be provided to the
-  /// diagnostic. A copy of this string will be stored in the
-  /// DiagnosticsEngine object itself.
-  ///
-  /// \param Arg2 A string argument that will be provided to the
-  /// diagnostic. A copy of this string will be stored in the
-  /// DiagnosticsEngine object itself.
-  ///
-  /// \param Arg3 A string argument that will be provided to the
-  /// diagnostic. A copy of this string will be stored in the
-  /// DiagnosticsEngine object itself.
-  void SetDelayedDiagnostic(unsigned DiagID, StringRef Arg1 = "",
-                            StringRef Arg2 = "", StringRef Arg3 = "");
-
-  // /// Clear out the current diagnostic.
-  // void Clear() { CurDiagID = std::numeric_limits<unsigned>::max(); }
 
 private:
   // This is private state used by DiagnosticBuilder.  We put it here instead of
@@ -1022,9 +971,6 @@ private:
   friend class DiagnosticErrorTrap;
   friend class DiagnosticIDs;
   friend class PartialDiagnostic;
-
-  /// Report the delayed diagnostic.
-  void ReportDelayed();
 
   enum {
     /// The maximum number of arguments we can hold.
@@ -1075,10 +1021,6 @@ protected:
   ///
   /// \param Force Emit the diagnostic regardless of suppression settings.
   bool EmitCurrentDiagnostic(const DiagnosticBuilder& DB, bool Force = false);
-
-  // unsigned getCurrentDiagID() const { return CurDiagID; }
-
-  // SourceLocation getCurrentDiagLoc() const { return CurDiagLoc; }
 
   /// @}
 };
@@ -1219,11 +1161,6 @@ public:
 protected:
   StreamingDiagnostic() = default;
 
-  /// Construct with an external storage not owned by itself. The allocator
-  /// is a null pointer in this case.
-  // explicit StreamingDiagnostic(DiagnosticStorage *Storage)
-  //     : DiagStorage(Storage) {}
-
   /// Construct with a storage allocator which will manage the storage. The
   /// allocator is not a null pointer in this case.
   explicit StreamingDiagnostic(DiagStorageAllocator &Alloc)
@@ -1287,7 +1224,7 @@ class DiagnosticBuilder : public StreamingDiagnostic {
 
   DiagnosticBuilder() = default;
 
-  explicit DiagnosticBuilder(DiagnosticsEngine *diagObj, SourceLocation CurDiagLoc, unsigned CurDiagID);
+  DiagnosticBuilder(DiagnosticsEngine *diagObj, SourceLocation CurDiagLoc, unsigned CurDiagID);
 
 protected:
   /// Clear out the current diagnostic.
@@ -1528,6 +1465,11 @@ using DiagNullabilityKind = std::pair<NullabilityKind, bool>;
 
 const StreamingDiagnostic &operator<<(const StreamingDiagnostic &DB,
                                       DiagNullabilityKind nullability);
+
+inline DiagnosticBuilder DiagnosticsEngine::Report(SourceLocation Loc,
+                                                   unsigned DiagID) {
+  return DiagnosticBuilder(this, Loc, DiagID);
+}
 
 const StreamingDiagnostic &operator<<(const StreamingDiagnostic &DB,
                                       llvm::Error &&E);

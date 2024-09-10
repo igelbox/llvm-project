@@ -1,5 +1,3 @@
-#pragma GCC optimize ("O0")
-
 //===- Diagnostic.cpp - C Language Family Diagnostic Handling -------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -42,11 +40,6 @@
 #include <vector>
 
 using namespace clang;
-
-static bool werefoked = false;
-void Fok(const char *start, const char* current, const char* end, SmallVectorImpl<char> &OutStr) {
-  werefoked = true;
-}
 
 const StreamingDiagnostic &clang::operator<<(const StreamingDiagnostic &DB,
                                              DiagNullabilityKind nullability) {
@@ -133,9 +126,7 @@ void DiagnosticsEngine::Reset(bool soft /*=false*/) {
   TrapNumErrorsOccurred = 0;
   TrapNumUnrecoverableErrorsOccurred = 0;
 
-  // CurDiagID = std::numeric_limits<unsigned>::max();
   LastDiagLevel = DiagnosticIDs::Ignored;
-  DelayedDiagID = 0;
 
   if (!soft) {
     // Clear state related to #pragma diagnostic.
@@ -148,28 +139,6 @@ void DiagnosticsEngine::Reset(bool soft /*=false*/) {
     DiagStates.emplace_back();
     DiagStatesByLoc.appendFirst(&DiagStates.back());
   }
-}
-
-void DiagnosticsEngine::SetDelayedDiagnostic(unsigned DiagID, StringRef Arg1,
-                                             StringRef Arg2, StringRef Arg3) {
-  if (DelayedDiagID)
-    return;
-
-  DelayedDiagID = DiagID;
-  DelayedDiagArg1 = Arg1.str();
-  DelayedDiagArg2 = Arg2.str();
-  DelayedDiagArg3 = Arg3.str();
-}
-
-void DiagnosticsEngine::ReportDelayed() {
-  unsigned ID = DelayedDiagID;
-  DelayedDiagID = 0;
-  Report(ID) << DelayedDiagArg1 << DelayedDiagArg2 << DelayedDiagArg3;
-}
-
-DiagnosticBuilder DiagnosticsEngine::Report(SourceLocation Loc,
-                                                   unsigned DiagID) {
-  return DiagnosticBuilder(this, Loc, DiagID);
 }
 
 DiagnosticMapping &
@@ -523,8 +492,6 @@ void DiagnosticsEngine::Report(const StoredDiagnostic &storedDiag) {
     if (DiagLevel == DiagnosticsEngine::Warning)
       ++NumWarnings;
   }
-
-  // CurDiagID = std::numeric_limits<unsigned>::max();
 }
 
 bool DiagnosticsEngine::EmitCurrentDiagnostic(const DiagnosticBuilder& DB, bool Force) {
@@ -549,13 +516,6 @@ bool DiagnosticsEngine::EmitCurrentDiagnostic(const DiagnosticBuilder& DB, bool 
     Emitted = ProcessDiag(DB);
   }
 
-  // Clear out the current diagnostic object.
-  // Clear();
-
-  // If there was a delayed diagnostic, emit it now.
-  if (!Force && DelayedDiagID)
-    ReportDelayed();
-
   return Emitted;
 }
 
@@ -564,8 +524,6 @@ DiagnosticBuilder::DiagnosticBuilder(DiagnosticsEngine *diagObj, SourceLocation 
       CurDiagLoc(CurDiagLoc), CurDiagID(CurDiagID),
       IsActive(true) {
   assert(diagObj && "DiagnosticBuilder requires a valid DiagnosticsEngine!");
-  // assert(DiagStorage &&
-  //        "DiagnosticBuilder requires a valid DiagnosticStorage!");
 }
 
 DiagnosticBuilder::DiagnosticBuilder(const DiagnosticBuilder &D)
@@ -829,9 +787,8 @@ FormatDiagnostic(SmallVectorImpl<char> &OutStr) const {
     return;
   }
 
-  const auto id = getID();
   StringRef Diag =
-    getDiags()->getDiagnosticIDs()->getDescription(id);
+    getDiags()->getDiagnosticIDs()->getDescription(getID());
 
   FormatDiagnostic(Diag.begin(), Diag.end(), OutStr);
 }
@@ -910,11 +867,7 @@ FormatDiagnostic(const char *DiagStr, const char *DiagEnd,
     if (getArgKind(i) == DiagnosticsEngine::ak_qualtype)
       QualTypeVals.push_back(getRawArg(i));
 
-  const char *const DiagStart = DiagStr;
   while (DiagStr != DiagEnd) {
-    if (DiagStr > DiagEnd) {
-      Fok(DiagStart, DiagStr, DiagEnd, OutStr);
-    }
     if (DiagStr[0] != '%') {
       // Append non-%0 substrings to Str if we have one.
       const char *StrEnd = std::find(DiagStr, DiagEnd, '%');
@@ -1184,9 +1137,6 @@ FormatDiagnostic(const char *DiagStr, const char *DiagEnd,
     else
       FormattedArgs.push_back(std::make_pair(DiagnosticsEngine::ak_c_string,
                                         (intptr_t)getArgStdStr(ArgNo).c_str()));
-    if (OutStr.size() > 1024*1024) {
-      Fok(DiagStart, DiagStr, DiagEnd, OutStr);
-    }
   }
 
   // Append the type tree to the end of the diagnostics.
