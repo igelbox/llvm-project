@@ -560,9 +560,9 @@ DiagnosticIDs::getDiagnosticSeverity(unsigned DiagID, SourceLocation Loc,
   }
 
   // If explicitly requested, map fatal errors to errors.
-  // if (Result == diag::Severity::Fatal &&
-  //     Diag.CurDiagID != diag::fatal_too_many_errors && Diag.FatalsAsError)
-  //   Result = diag::Severity::Error;
+  if (Result == diag::Severity::Fatal &&
+      /*Diag.CurDiagID != diag::fatal_too_many_errors &&*/ Diag.FatalsAsError)
+    Result = diag::Severity::Error;
 
   // Custom diagnostics always are emitted in system headers.
   bool ShowInSystemHeader =
@@ -811,8 +811,8 @@ bool DiagnosticIDs::ProcessDiag(DiagnosticsEngine &Diag, const DiagnosticBuilder
 
   // Make sure we set FatalErrorOccurred to ensure that the notes from the
   // diagnostic that caused `fatal_too_many_errors` won't be emitted.
-  // if (Diag.CurDiagID == diag::fatal_too_many_errors)
-  //   Diag.FatalErrorOccurred = true;
+  if (Info.getID() == diag::fatal_too_many_errors)
+    Diag.FatalErrorOccurred = true;
   // Finally, report it.
   EmitDiag(Diag, DiagBuilder, DiagLevel);
   return true;

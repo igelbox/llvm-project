@@ -1545,17 +1545,21 @@ inline DiagnosticBuilder DiagnosticsEngine::Report(unsigned DiagID) {
 /// currently in-flight diagnostic.
 class Diagnostic {
   const DiagnosticsEngine *DiagObj;
-  const DiagnosticBuilder &DiagBuilder;
+  SourceLocation CurDiagLoc;
+  unsigned CurDiagID;
+  std::string FlagValue;
   const DiagnosticStorage &DiagStorage;
   std::optional<StringRef> StoredDiagMessage;
 
 public:
-  explicit Diagnostic(const DiagnosticsEngine *DO, const DiagnosticBuilder &DiagBuilder);
-  Diagnostic(const DiagnosticsEngine *DO, const DiagnosticBuilder &DiagBuilder, StringRef storedDiagMessage);
+  Diagnostic(const DiagnosticsEngine *DO, const DiagnosticBuilder &DiagBuilder);
+  Diagnostic(const DiagnosticsEngine *DO,
+      SourceLocation CurDiagLoc, unsigned CurDiagID, const DiagnosticStorage &DiagStorage,
+      StringRef storedDiagMessage);
 
   const DiagnosticsEngine *getDiags() const { return DiagObj; }
-  unsigned getID() const { return DiagBuilder.CurDiagID; }
-  const SourceLocation &getLocation() const { return DiagBuilder.CurDiagLoc; }
+  unsigned getID() const { return CurDiagID; }
+  const SourceLocation &getLocation() const { return CurDiagLoc; }
   bool hasSourceManager() const { return DiagObj->hasSourceManager(); }
   SourceManager &getSourceManager() const { return DiagObj->getSourceManager();}
 
@@ -1653,7 +1657,7 @@ public:
   }
 
   /// Return the value associated with this diagnostic flag.
-  StringRef getFlagValue() const { return DiagBuilder.FlagValue; }
+  StringRef getFlagValue() const { return FlagValue; }
 
   /// Format this diagnostic into a string, substituting the
   /// formal arguments into the %0 slots.

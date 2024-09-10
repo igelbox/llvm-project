@@ -508,18 +508,16 @@ void DiagnosticsEngine::setSeverityForAll(diag::Flavor Flavor,
 }
 
 void DiagnosticsEngine::Report(const StoredDiagnostic &storedDiag) {
-  DiagnosticBuilder DB(this, storedDiag.getLocation(), storedDiag.getID());
-  auto& DiagStorage = *DB.getStorage();
+  DiagnosticStorage DiagStorage;
   DiagStorage.DiagRanges.append(storedDiag.range_begin(),
                                 storedDiag.range_end());
 
-  DiagStorage.FixItHints.clear();
   DiagStorage.FixItHints.append(storedDiag.fixit_begin(),
                                 storedDiag.fixit_end());
 
   assert(Client && "DiagnosticConsumer not set!");
   Level DiagLevel = storedDiag.getLevel();
-  Diagnostic Info(this, DB, storedDiag.getMessage());
+  Diagnostic Info(this, storedDiag.getLocation(), storedDiag.getID(), DiagStorage, storedDiag.getMessage());
   Client->HandleDiagnostic(DiagLevel, Info);
   if (Client->IncludeInDiagnosticCounts()) {
     if (DiagLevel == DiagnosticsEngine::Warning)
@@ -585,10 +583,10 @@ DiagnosticBuilder::DiagnosticBuilder(const DiagnosticBuilder &D)
 }
 
 Diagnostic::Diagnostic(const DiagnosticsEngine *DO, const DiagnosticBuilder &DiagBuilder)
-    : DiagObj(DO), DiagBuilder(DiagBuilder), DiagStorage(*DiagBuilder.getStorage()) {}
+    : DiagObj(DO), CurDiagLoc(DiagBuilder.CurDiagLoc), CurDiagID(DiagBuilder.CurDiagID), FlagValue(DiagBuilder.FlagValue), DiagStorage(*DiagBuilder.getStorage()) {}
 
-Diagnostic::Diagnostic(const DiagnosticsEngine *DO, const DiagnosticBuilder &DiagBuilder, StringRef storedDiagMessage)
-    : DiagObj(DO), DiagBuilder(DiagBuilder), DiagStorage(*DiagBuilder.getStorage()),
+Diagnostic::Diagnostic(const DiagnosticsEngine *DO, SourceLocation CurDiagLoc,  unsigned CurDiagID, const DiagnosticStorage &DiagStorage, StringRef storedDiagMessage)
+    : DiagObj(DO), CurDiagLoc(CurDiagLoc), CurDiagID(CurDiagID), DiagStorage(DiagStorage),
     StoredDiagMessage(storedDiagMessage) {}
 
 
