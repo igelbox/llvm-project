@@ -1,3 +1,5 @@
+#pragma GCC optimize ("O0")
+
 //===--- DiagnosticIDs.cpp - Diagnostic IDs Handling ----------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -558,9 +560,9 @@ DiagnosticIDs::getDiagnosticSeverity(unsigned DiagID, SourceLocation Loc,
   }
 
   // If explicitly requested, map fatal errors to errors.
-  if (Result == diag::Severity::Fatal &&
-      Diag.CurDiagID != diag::fatal_too_many_errors && Diag.FatalsAsError)
-    Result = diag::Severity::Error;
+  // if (Result == diag::Severity::Fatal &&
+  //     Diag.CurDiagID != diag::fatal_too_many_errors && Diag.FatalsAsError)
+  //   Result = diag::Severity::Error;
 
   // Custom diagnostics always are emitted in system headers.
   bool ShowInSystemHeader =
@@ -735,8 +737,8 @@ StringRef DiagnosticIDs::getNearestOption(diag::Flavor Flavor,
 
 /// ProcessDiag - This is the method used to report a diagnostic that is
 /// finally fully formed.
-bool DiagnosticIDs::ProcessDiag(DiagnosticsEngine &Diag) const {
-  Diagnostic Info(&Diag);
+bool DiagnosticIDs::ProcessDiag(DiagnosticsEngine &Diag, const DiagnosticBuilder &DiagBuilder) const {
+  Diagnostic Info(&Diag, DiagBuilder);
 
   assert(Diag.getClient() && "DiagnosticClient not set!");
 
@@ -809,15 +811,15 @@ bool DiagnosticIDs::ProcessDiag(DiagnosticsEngine &Diag) const {
 
   // Make sure we set FatalErrorOccurred to ensure that the notes from the
   // diagnostic that caused `fatal_too_many_errors` won't be emitted.
-  if (Diag.CurDiagID == diag::fatal_too_many_errors)
-    Diag.FatalErrorOccurred = true;
+  // if (Diag.CurDiagID == diag::fatal_too_many_errors)
+  //   Diag.FatalErrorOccurred = true;
   // Finally, report it.
-  EmitDiag(Diag, DiagLevel);
+  EmitDiag(Diag, DiagBuilder, DiagLevel);
   return true;
 }
 
-void DiagnosticIDs::EmitDiag(DiagnosticsEngine &Diag, Level DiagLevel) const {
-  Diagnostic Info(&Diag);
+void DiagnosticIDs::EmitDiag(DiagnosticsEngine &Diag, const DiagnosticBuilder &DiagBuilder, Level DiagLevel) const {
+  Diagnostic Info(&Diag, DiagBuilder);
   assert(DiagLevel != DiagnosticIDs::Ignored && "Cannot emit ignored diagnostics!");
 
   Diag.Client->HandleDiagnostic((DiagnosticsEngine::Level)DiagLevel, Info);
@@ -826,7 +828,7 @@ void DiagnosticIDs::EmitDiag(DiagnosticsEngine &Diag, Level DiagLevel) const {
       ++Diag.NumWarnings;
   }
 
-  Diag.CurDiagID = ~0U;
+  // Diag.CurDiagID = ~0U;
 }
 
 bool DiagnosticIDs::isUnrecoverable(unsigned DiagID) const {

@@ -1627,7 +1627,7 @@ public:
   /// Cause the active diagnostic on the DiagosticsEngine to be
   /// emitted. This is closely coupled to the SemaDiagnosticBuilder class and
   /// should not be used elsewhere.
-  void EmitCurrentDiagnostic(unsigned DiagID);
+  void EmitCurrentDiagnostic(unsigned DiagID, const DiagnosticBuilder& DB);
 
   /// Records and restores the CurFPFeatures state on entry/exit of compound
   /// statements.
@@ -1761,7 +1761,7 @@ public:
       Clear();
 
       // Dispatch to Sema to emit the diagnostic.
-      SemaRef.EmitCurrentDiagnostic(DiagID);
+      SemaRef.EmitCurrentDiagnostic(DiagID, *this);
     }
 
     /// Teach operator<< to produce an object of the correct type.

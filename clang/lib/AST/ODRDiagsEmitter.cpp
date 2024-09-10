@@ -1,3 +1,5 @@
+#pragma GCC optimize ("O0")
+
 //===-- ODRDiagsEmitter.cpp - Diagnostics for ODR mismatches ----*- C++ -*-===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
